@@ -12,6 +12,9 @@ def writeNumber(number):
   _writeDigit(firstDigit)
   _writeDigit(secondDigit, 1)
 
+def clearOutput():
+  shiftpi.digitalWrite(shiftpi.ALL, shiftpi.LOW)
+
 def _writeDigit(value, position = 0):
   pins = [];
 

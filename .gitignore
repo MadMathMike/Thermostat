@@ -99,3 +99,6 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+# nano save files
+*.py.save
