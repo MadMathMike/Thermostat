@@ -4,7 +4,7 @@ shiftpi.pinsSetup(18, 23, 24)
 shiftpi.shiftRegisters(2)
 shiftpi.startupMode(shiftpi.LOW, True)
 
-def writeNumber(number):
+def show(number):
   firstDigit = (number % 100)/10
   secondDigit = number % 10
 
@@ -12,7 +12,7 @@ def writeNumber(number):
   _writeDigit(firstDigit)
   _writeDigit(secondDigit, 1)
 
-def clearOutput():
+def clear():
   shiftpi.digitalWrite(shiftpi.ALL, shiftpi.LOW)
 
 def _writeDigit(value, position = 0):
@@ -41,15 +41,4 @@ def _writeDigit(value, position = 0):
 
   for pin in pins:
     shiftpi.digitalWrite(pin + position * 8, shiftpi.HIGH)
-
-def countToN(n):
-  number = 0
-
-  while number <= n:
-    writeNumber(number)
-    shiftpi.delay(250)
-    number += 1
-
-  shiftpi.delay(1000)
-  shiftpi.digitalWrite(shiftpi.ALL, shiftpi.LOW)
 

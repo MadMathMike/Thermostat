@@ -38,8 +38,9 @@ def rotaryDeal():
 			print 'globalCounter = %d' % globalCounter
 
 def clear(ev=None):
-        globalCounter = 0
-	print 'globalCounter = %d' % globalounter
+        global globalCounter
+	globalCounter = 0
+	print 'globalCounter = %d' % globalCounter
 	time.sleep(1)
 
 def rotaryClear():
@@ -50,10 +51,9 @@ def loop():
 	global globalCounter
 	while True:
 		rotaryDeal()
-#		print 'globalCounter = %d' % globalCounter
 
 def destroy():
-	GPIO.cleanup()             # Release resource
+	GPIO.cleanup()
 
 if __name__ == '__main__':     # Program start from here
 	setup()
