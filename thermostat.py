@@ -1,6 +1,7 @@
 #depends on library w1thermsensor library found here:  https://github.com/timofurrer/w1thermsensor
 #relevant command from above link: sudo apt-get install python-w1thermsensor
 import time
+import rotaryencoder
 import RPi.GPIO as GPIO
 import twodigitdisplay as display
 from w1thermsensor import W1ThermSensor
@@ -45,6 +46,7 @@ def turnThermostatOn():
   time.sleep(3)
 
   # turn on background thread to read rotary input
+  rotaryencoder.listenForInput()
 
   thermostatIsOn = 1
 
@@ -54,6 +56,8 @@ def turnThermostatOff():
   global thermostatIsOn
 
   # turn off background thread for rotary input
+  rotaryencoder.stopListeningForInput()
+
   # turn off background thread for temp display and turning on/off ac
 
   display.clear()
@@ -69,5 +73,7 @@ def turnThermostatOnOff(channel):
     turnThermostatOn()
 
 GPIO.add_event_detect(switchpin, GPIO.FALLING, callback=turnThermostatOnOff)
+
+rotaryencoder.setup(dialTurnedUp, dialTurnedDown)
 
 turnThermostatOn()
