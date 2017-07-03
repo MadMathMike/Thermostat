@@ -2,9 +2,9 @@
 #relevant command from above link: sudo apt-get install python-w1thermsensor
 import time
 import RPi.GPIO as GPIO
-import twodigitdisplay as display
 from w1thermsensor import W1ThermSensor
 from rotaryencoder import RotaryEncoder
+from twodigitdisplay import TwoDigitDisplay
 
 switchpin = 22
 minTemp = 60
@@ -13,6 +13,8 @@ targetTemp = 73
 thermostatIsOn = 0
 
 sensor = W1ThermSensor()
+display = TwoDigitDisplay()
+
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(switchpin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
@@ -23,6 +25,7 @@ def getTemp():
 def dialTurnedUp():
   global maxTemp
   global targetTemp
+  global display
 
   if(targetTemp < maxTemp):
     targetTemp += 1
@@ -32,6 +35,7 @@ def dialTurnedUp():
 def dialTurnedDown():
   global minTemp
   global targetTemp
+  global display
 
   if(targetTemp > minTemp):
     targetTemp -= 1
@@ -56,6 +60,7 @@ def turnThermostatOn():
 def turnThermostatOff():
   global thermostatIsOn
   global encoder
+  global display
 
   # turn off background thread for rotary input
   encoder.stopListeningForInput()
