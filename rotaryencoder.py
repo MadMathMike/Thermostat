@@ -1,81 +1,56 @@
-#Lifted from SunFounder code: https://www.sunfounder.com/learn/Super_Kit_V2_for_RaspberryPi/lesson-8-rotary-encoder-super-kit-for-raspberrypi.html
-import RPi.GPIO as GPIO
-import time
+#Heavily modified from SunFounder code: https://www.sunfounder.com/learn/Super_Kit_V2_for_RaspberryPi/lesson-8-rotary-encoder-super-kit-for-raspberrypi.html
 import threading
+import RPi.GPIO as GPIO
 
-RoAPin = 27
-RoBPin = 17
+class RotaryEncoder:
+	_dtPin = 0
+	_clkPin = 0
+	_clockwiseCallback = None
+	_counterClockwiseCallback = None
+	_inputThread = None
+	_threadStopEvent = None
 
-flag = 0
-Last_RoB_Status = 0
-Current_RoB_Status = 0
+	def __init__(self, dtPin, clkPin, clockwiseCallback, counterClockwiseCallback):
+		self._dtPin = dtPin
+		self._clkPin = clkPin
+		self._clockwiseCallback = clockwiseCallback
+		self._counterClockwiseCallback = counterClockwiseCallback
+		self._threadStopEvent = threading.Event()
 
-stopInputThread = 0
-inputThread = None
+		GPIO.setmode(GPIO.BCM)
+		GPIO.setup(self._dtPin, GPIO.IN)
+		GPIO.setup(self._clkPin, GPIO.IN)
 
-clockwiseCallBack = None
-counterClockwiseCallBack = None
+	def listenForInput(self):
+		self._inputThread = threading.Thread(target=self._listenForInput)
+		self._inputThread.start()
 
-GPIO.setmode(GPIO.BCM)       # Numbers GPIOs by physical location
-GPIO.setup(RoAPin, GPIO.IN)    # input mode
-GPIO.setup(RoBPin, GPIO.IN)
+	def stopListeningForInput(self):
+		self._threadStopEvent.set()
+		self._inputThread.join()		
+	
+	def _listenForInput(self):
+		while not self._threadStopEvent.is_set():
+			self._rotaryDeal()
+		
+		self._threadStopEvent.clear()
 
-
-def setup(clockwiseCB, counterClockwiseCB):
-	global clockwiseCallBack
-	global counterClockwiseCallBack
-
-	clockwiseCallBack = clockwiseCB
-	counterClockwiseCallBack = counterClockwiseCB
-
-def rotaryDeal():
-	global flag
-	global Last_RoB_Status
-	global Current_RoB_Status
-	global globalCounter
-	global clockwiseCallBack
-	global counterClockwiseCallBack
-
-	Last_RoB_Status = GPIO.input(RoBPin)
-
-	while(not GPIO.input(RoAPin)):
-		Current_RoB_Status = GPIO.input(RoBPin)
-		flag = 1
-	if flag == 1:
+	def _rotaryDeal(self):
+		lastClkStatus = GPIO.input(self._clkPin)
+		currentClkStatus = 0
 		flag = 0
-		if (Last_RoB_Status == 0) and (Current_RoB_Status == 1):
-			clockwiseCallBack()
-		if (Last_RoB_Status == 1) and (Current_RoB_Status == 0):
-			counterClockwiseCallBack()
 
-def loop():
-	global stopInputThread
+		while(not GPIO.input(self._dtPin)):
+			currentClkStatus = GPIO.input(self._clkPin)
+			flag = 1
 
-	while not stopInputThread:
-		rotaryDeal()
+			if self._threadStopEvent.is_set():
+				flag = 0
+				break
+		if flag == 1:
+			flag = 0
+			if (lastClkStatus == 0) and (currentClkStatus == 1):
+				self._clockwiseCallback()
+			if (lastClkStatus == 1) and (currentClkStatus == 0):
+				self._counterClockwiseCallback()
 
-	stopInputThread = 0
-
-def listenForInput():
-	global stopInputThread
-	global inputThread
-
-	stopInputThread = 0
-
-	inputThread = threading.Thread(target = loop)
-	inputThread.start()
-
-def stopListeningForInput():
-	global stopInputThread
-
-	stopInputThread = 1
-
-# def destroy():
-#	GPIO.cleanup()
-
-#if __name__ == '__main__':     # Program start from here
-#	setup()
-#	try:
-#		loop()
-#	except KeyboardInterrupt:  # When 'Ctrl+C' is pressed, the child program destroy() will be  executed.
-#		destroy()
